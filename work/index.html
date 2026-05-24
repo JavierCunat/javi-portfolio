@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>work · javi cunat</title>
+<link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="page">
+
+<div id="mac-canvas"></div>
+<div class="grain"></div>
+
+<div class="ui top-left">
+  <div class="name"><a href="/">javier cunat</a></div>
+  <div class="sub">portfolio · est. 2026</div>
+</div>
+
+<nav class="nav">
+  <a href="/">home</a>
+  <a href="/about.html">about</a>
+  <a href="/work/" aria-current="page">work</a>
+  <a href="/contact.html">contact</a>
+</nav>
+
+<main class="page-content">
+  <div class="eyebrow">work · selected</div>
+  <h1>things i've built.</h1>
+
+  <ul class="project-list">
+    <li>
+      <a href="#" aria-disabled="true">
+        <span class="title">proxi healthcare</span>
+        <span class="desc">referral-research SaaS for independent specialists · $3k MRR</span>
+        <span class="year">2025 →</span>
+      </a>
+    </li>
+    <li>
+      <a href="#" aria-disabled="true">
+        <span class="title">cryptokids</span>
+        <span class="desc">nonprofit donating tech + teaching cs across the digital divide</span>
+        <span class="year">2022 →</span>
+      </a>
+    </li>
+    <li>
+      <a href="#" aria-disabled="true">
+        <span class="title">amazon · advertiser support</span>
+        <span class="desc">react + python tool with bedrock LLM recs — escalations 10% → &lt;1%</span>
+        <span class="year">2025</span>
+      </a>
+    </li>
+    <li>
+      <a href="#" aria-disabled="true">
+        <span class="title">amazon · adgraph ingestion</span>
+        <span class="desc">glue + lambda pipeline for 100k+ advertiser-brand mappings · 99% coverage</span>
+        <span class="year">2024</span>
+      </a>
+    </li>
+    <li>
+      <a href="#" aria-disabled="true">
+        <span class="title">codepath · android TA</span>
+        <span class="desc">taught 12 upperclassmen kotlin + mentored capstone teams</span>
+        <span class="year">2025</span>
+      </a>
+    </li>
+  </ul>
+
+  <hr/>
+
+  <p style="opacity: 0.6; font-size: 14px;">
+    incoming: software engineer intern at <strong>salesforce</strong>, summer '26.
+  </p>
+</main>
+
+<script type="module">
+  import { mountMac } from '/src/mac.js';
+  mountMac(document.getElementById('mac-canvas'), { mode: 'mini' });
+</script>
+
+</body>
+</html>

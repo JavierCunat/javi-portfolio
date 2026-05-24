@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>about · javi cunat</title>
+<link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="page">
+
+<div id="mac-canvas"></div>
+<div class="grain"></div>
+
+<div class="ui top-left">
+  <div class="name"><a href="/">javier cunat</a></div>
+  <div class="sub">portfolio · est. 2026</div>
+</div>
+
+<nav class="nav">
+  <a href="/">home</a>
+  <a href="/about.html" aria-current="page">about</a>
+  <a href="/work/">work</a>
+  <a href="/contact.html">contact</a>
+</nav>
+
+<main class="page-content">
+  <div class="eyebrow">about</div>
+  <h1>hi, i'm javi.</h1>
+
+  <p>i'm a cs student at stanford (class of '27), on the systems and AI track.
+    i grew up in miami, speak english / spanish / catalan, and most of what i
+    build sits somewhere between infra, AI, and products people actually use.</p>
+
+  <p>currently building <strong>proxi healthcare</strong> — a referral-research
+    SaaS for independent specialists ($3k MRR, 6 clinics in pilot). incoming
+    SWE intern at <strong>salesforce</strong> for summer '26. previously
+    interned at <strong>amazon</strong> twice (seattle '25, nyc '24) and TA'd
+    android development at <strong>codepath</strong>.</p>
+
+  <p>on the side i run <strong>cryptokids</strong> — a service project that's
+    donated $20k+ in tech and taught cs to low-income students, incarcerated
+    individuals, and folks impacted by homelessness.</p>
+
+  <hr/>
+
+  <p><strong>recognitions —</strong> jack kent cooke scholar · national cyber
+    scholar · miami hack week top 3 · hack georgia tech 10 winner.</p>
+
+  <p><strong>off the clock —</strong> volleyball, la liga (forever culer),
+    travel, cooking with family, hackathons, CTFs, and making cs / lifestyle
+    content on <a href="https://tiktok.com/@javiercunat" target="_blank" rel="noopener">tiktok</a>
+    and <a href="https://instagram.com/javiercunat" target="_blank" rel="noopener">instagram</a>.</p>
+
+  <p>if you want to build something, hire me, or just chat —
+    <a href="/contact.html">say hi</a>.</p>
+</main>
+
+<script type="module">
+  import { mountMac } from '/src/mac.js';
+  mountMac(document.getElementById('mac-canvas'), {
+    mode: 'mini',
+    onScreenClick: () => { window.location.href = '/work/'; },
+  });
+</script>
+
+</body>
+</html>

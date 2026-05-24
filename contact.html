@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>contact · javi cunat</title>
+<link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="page">
+
+<div id="mac-canvas"></div>
+<div class="grain"></div>
+
+<div class="ui top-left">
+  <div class="name"><a href="/">javier cunat</a></div>
+  <div class="sub">portfolio · est. 2026</div>
+</div>
+
+<nav class="nav">
+  <a href="/">home</a>
+  <a href="/about.html">about</a>
+  <a href="/work/">work</a>
+  <a href="/contact.html" aria-current="page">contact</a>
+</nav>
+
+<main class="page-content">
+  <div class="eyebrow">contact</div>
+  <h1>let's talk.</h1>
+
+  <p>fastest reply is over email — <a href="mailto:javiercunnat@gmail.com">javiercunnat@gmail.com</a></p>
+  <p>or drop a note below ↓</p>
+
+  <form class="contact-form" action="mailto:javiercunnat@gmail.com" method="post" enctype="text/plain">
+    <input type="text" name="name" placeholder="your name" required />
+    <input type="email" name="email" placeholder="your email" required />
+    <textarea name="message" placeholder="what's on your mind?" required></textarea>
+    <button type="submit">send</button>
+  </form>
+
+  <hr/>
+
+  <p>elsewhere —
+    <a href="https://github.com/javiercunat" target="_blank" rel="noopener">github</a>
+    · <a href="https://linkedin.com/in/javiercunat" target="_blank" rel="noopener">linkedin</a>
+    · <a href="https://tiktok.com/@javiercunat" target="_blank" rel="noopener">tiktok</a>
+    · <a href="https://instagram.com/javiercunat" target="_blank" rel="noopener">instagram</a>
+    — all @javiercunat
+  </p>
+
+  <p style="opacity: 0.55; font-size: 14px; margin-top: 28px;">
+    based in palo alto · open to chats about software, AI, healthcare, and anything weird.
+  </p>
+</main>
+
+<script type="module">
+  import { mountMac } from '/src/mac.js';
+  mountMac(document.getElementById('mac-canvas'), { mode: 'mini' });
+</script>
+
+</body>
+</html>

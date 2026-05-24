@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>javi · portfolio</title>
+<link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="home">
+
+<div id="mac-canvas"></div>
+<div class="grain"></div>
+
+<div class="ui top-left">
+  <div class="name"><a href="/">javier cunat</a></div>
+  <div class="sub">portfolio · est. 2026</div>
+</div>
+
+<nav class="nav">
+  <a href="/" aria-current="page">home</a>
+  <a href="/about.html">about</a>
+  <a href="/work/">work</a>
+  <a href="/contact.html">contact</a>
+</nav>
+
+<div class="ui top-right">
+  cs<br/>stanford '27
+</div>
+
+<div class="ui bottom" id="hint">
+  <span class="hint pulse">click the screen</span>
+</div>
+
+<script type="module">
+  import { mountMac } from '/src/mac.js';
+  mountMac(document.getElementById('mac-canvas'), { mode: 'full' });
+</script>
+
+</body>
+</html>
