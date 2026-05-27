@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 /**
  * mountMac(container, options) — drops a Macintosh scene into `container`.
@@ -88,6 +89,14 @@ export function mountMac(container, options = {}) {
   const macGroup = new THREE.Group();
   scene.add(macGroup);
 
+  // Registry of clickable objects. As this scene grows into a room, register
+  // each clickable thing here with a handler — a single click-ray picks the
+  // nearest one. e.g. registerInteractable(deskLampMesh, () => toggleLamp())
+  const interactables = [];
+  function registerInteractable(object, onClick) {
+    interactables.push({ object, onClick });
+  }
+
   // ---------- CRT canvas texture ----------
   const SCREEN_W = 512;
   const SCREEN_H = 384;
@@ -155,6 +164,7 @@ export function mountMac(container, options = {}) {
     if (found) {
       found.material = screenMat;
       screenMesh = found;
+      if (isFull) registerInteractable(found, toggleScreen);
     }
   });
 
@@ -395,31 +405,11 @@ export function mountMac(container, options = {}) {
   // ---------- INTERACTION ----------
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
+  const TARGET = new THREE.Vector3(0, 0.7, 0);   // orbit pivot / lookAt point
+  const canvas = renderer.domElement;
 
-  function pointerToNDC(e, rect) {
-    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-  }
-
-  function hitsMac(e) {
-    const rect = renderer.domElement.getBoundingClientRect();
-    if (e.clientX < rect.left || e.clientX > rect.right ||
-        e.clientY < rect.top  || e.clientY > rect.bottom) return false;
-    pointerToNDC(e, rect);
-    raycaster.setFromCamera(pointer, camera);
-    if (screenMesh) {
-      const direct = raycaster.intersectObject(screenMesh, true);
-      if (direct.length > 0) return true;
-    }
-    return raycaster.intersectObject(macGroup, true).length > 0;
-  }
-
-  function onClick(e) {
-    if (!hitsMac(e)) return;
-    if (!isFull && options.onScreenClick) {
-      options.onScreenClick();
-      return;
-    }
+  // The CRT's own click behavior — open/close the projects folder.
+  function toggleScreen() {
     if (screenState === 'desktop') {
       screenState = 'opening';
       folderAnimT = 0;
@@ -430,34 +420,72 @@ export function mountMac(container, options = {}) {
     }
   }
 
-  function onMove(e) {
-    document.body.style.cursor = hitsMac(e) ? 'pointer' : 'default';
+  function pointerToNDC(e, rect) {
+    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
   }
 
-  // For mini-mode we listen on the renderer's canvas (which is positioned in
-  // the corner via CSS). For full mode we listen on window so users can click
-  // through the chrome.
-  const evtTarget = isFull ? window : renderer.domElement;
-  evtTarget.addEventListener('click', onClick);
-  evtTarget.addEventListener('mousemove', onMove);
+  // Nearest interactable under the cursor, or null.
+  function pickInteractable(e) {
+    const rect = canvas.getBoundingClientRect();
+    if (e.clientX < rect.left || e.clientX > rect.right ||
+        e.clientY < rect.top  || e.clientY > rect.bottom) return null;
+    pointerToNDC(e, rect);
+    raycaster.setFromCamera(pointer, camera);
+    let best = null, bestDist = Infinity;
+    for (const it of interactables) {
+      const hits = raycaster.intersectObject(it.object, true);
+      if (hits.length && hits[0].distance < bestDist) {
+        bestDist = hits[0].distance;
+        best = it;
+      }
+    }
+    return best;
+  }
 
-  // Parallax + zoom (full mode only — mini mode stays still + scrolls page)
-  let mx = 0, my = 0;
-  let zoomDist = INITIAL_Z;
-  const ZOOM_MIN = 2.5;
-  const ZOOM_MAX = 14;
-
-  let onWheel = null;
+  // ---------- CAMERA CONTROL ----------
+  // Full mode: full orbit (drag to rotate, wheel to zoom) via OrbitControls.
+  // Mini mode: gentle auto-orbit, no user control (page scroll stays free).
+  let controls = null;
   if (isFull) {
-    window.addEventListener('mousemove', (e) => {
-      mx = (e.clientX / window.innerWidth) - 0.5;
-      my = (e.clientY / window.innerHeight) - 0.5;
-    });
-    onWheel = (e) => {
-      e.preventDefault();
-      zoomDist = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoomDist + e.deltaY * 0.0025));
-    };
-    window.addEventListener('wheel', onWheel, { passive: false });
+    controls = new OrbitControls(camera, canvas);
+    controls.target.copy(TARGET);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = false;            // lock panning until the room exists
+    controls.minDistance = 2.5;
+    controls.maxDistance = 14;
+    controls.minPolarAngle = 0.15;         // can't go fully overhead
+    controls.maxPolarAngle = Math.PI / 2 + 0.05;  // can't dip under the desk
+    controls.rotateSpeed = 0.6;
+    controls.zoomSpeed = 0.8;
+    controls.update();
+  }
+
+  // Click vs. drag: OrbitControls owns drags; we only treat a near-stationary
+  // press-release as a click and raycast it against the interactables.
+  let downX = 0, downY = 0, downT = 0;
+  function onPointerDown(e) {
+    downX = e.clientX; downY = e.clientY; downT = performance.now();
+  }
+  function onPointerUp(e) {
+    const moved = Math.hypot(e.clientX - downX, e.clientY - downY);
+    if (moved > 6 || performance.now() - downT > 500) return; // it was a drag/hold
+    const hit = pickInteractable(e);
+    if (hit) hit.onClick();
+  }
+  function onMove(e) {
+    document.body.style.cursor = pickInteractable(e) ? 'pointer' : 'default';
+  }
+
+  canvas.addEventListener('pointerdown', onPointerDown);
+  canvas.addEventListener('pointerup', onPointerUp);
+  canvas.addEventListener('mousemove', onMove);
+
+  // Mini mode: clicking anywhere on the Mac navigates (set up immediately since
+  // macGroup is a stable reference even though the model loads async).
+  if (!isFull && options.onScreenClick) {
+    registerInteractable(macGroup, () => options.onScreenClick());
   }
 
   // ---------- RESIZE ----------
@@ -491,18 +519,13 @@ export function mountMac(container, options = {}) {
     drawScreen();
 
     if (isFull) {
-      const targetX = mx * 0.4;
-      const targetY = 1.2 + my * 0.15;
-      camera.position.x += (targetX - camera.position.x) * 0.04;
-      camera.position.y += (targetY - camera.position.y) * 0.04;
-      camera.position.z += (zoomDist - camera.position.z) * 0.08;
-      camera.lookAt(0, 0.7, 0);
+      controls.update();   // applies damping/inertia
     } else {
       // Gentle auto-rotate in mini mode
       miniSpin += dt * 0.15;
       camera.position.x = Math.sin(miniSpin) * 1.2;
       camera.position.z = INITIAL_Z + Math.cos(miniSpin) * 0.4;
-      camera.lookAt(0, 0.7, 0);
+      camera.lookAt(TARGET);
     }
 
     renderer.render(scene, camera);
@@ -513,9 +536,10 @@ export function mountMac(container, options = {}) {
     destroy() {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      evtTarget.removeEventListener('click', onClick);
-      evtTarget.removeEventListener('mousemove', onMove);
-      if (onWheel) window.removeEventListener('wheel', onWheel);
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      canvas.removeEventListener('pointerup', onPointerUp);
+      canvas.removeEventListener('mousemove', onMove);
+      if (controls) controls.dispose();
       renderer.dispose();
       pmrem.dispose();
       container.removeChild(renderer.domElement);
